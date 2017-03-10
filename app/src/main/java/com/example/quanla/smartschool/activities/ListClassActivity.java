@@ -1,18 +1,29 @@
 package com.example.quanla.smartschool.activities;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.example.quanla.smartschool.R;
+
+import butterknife.BindView;
+
 public class ListClassActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    @BindView(R.id.rv_class_list)
+    RecyclerView rvClassList;
+    //ClassListAdapter classListAdapter ;
+    ProgressDialog progress;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
