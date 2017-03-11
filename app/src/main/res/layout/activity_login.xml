@@ -5,7 +5,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp"
-    android:background="@drawable/background"
     tools:context="com.example.quanla.smartschool.activities.LoginActivity">
 
 
@@ -58,34 +57,24 @@
         android:layout_below="@id/til_password"
         android:orientation="horizontal"
         android:paddingTop="16dp">
-
-        <com.dd.CircularProgressButton
-            android:id="@+id/bt_login"
+        <Button
+            android:id="@+id/btn_login"
             android:layout_weight="1"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
-            app:cpb_textComplete="Complete"
-            app:cpb_cornerRadius="48dp"
             android:layout_margin="16dp"
-            app:cpb_textError="Error"
-            app:cpb_textIdle="Login"/>
+            android:layout_height="wrap_content"
+            android:text="@string/login"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/shape_button" />
 
-        <com.dd.CircularProgressButton
-            android:id="@+id/bt_register"
+        <Button
+            android:id="@+id/btn_register"
             android:layout_weight="1"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textColor="#FFFFFF"
-            android:textSize="18sp"
             android:layout_margin="16dp"
-            app:cpb_textComplete="Complete"
-            app:cpb_cornerRadius="48dp"
-            app:cpb_textError="Error"
-            app:cpb_textIdle="Register"/>
+            android:layout_height="wrap_content"
+            android:text="@string/register"
+            android:background="@drawable/shape_button_register" />
     </LinearLayout>
 
 </RelativeLayout>

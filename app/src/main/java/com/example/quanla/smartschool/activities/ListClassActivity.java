@@ -8,6 +8,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.ContextMenu;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -24,7 +25,6 @@ import com.example.quanla.smartschool.adapter.ClassListAdapter;
 import com.example.quanla.smartschool.database.DbClassContext;
 import com.example.quanla.smartschool.eventbus.GetDataFaildedEvent;
 import com.example.quanla.smartschool.eventbus.GetDataSuccusEvent;
-import com.roger.catloadinglibrary.CatLoadingView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,8 +40,7 @@ public class ListClassActivity extends AppCompatActivity
 
     @BindView(R.id.rv_class_list)
     RecyclerView rvClassList;
-    ClassListAdapter classListAdapter = new ClassListAdapter(this);
-    CatLoadingView catLoadingView = new CatLoadingView();
+    ProgressDialog progress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,19 +60,20 @@ public class ListClassActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+
     public void setupUI()
     {
-        catLoadingView.show(getSupportFragmentManager(), "");
+        progress = ProgressDialog.show(this, "Loading",
+                "Please waiting...", true);
         if (DbClassContext.instance.getStudents()!=null){
-            catLoadingView.dismiss();
-            //classListAdapter = new ClassListAdapter(this);
+            progress.dismiss();
             DbClassContext.instance.getAllGroup();
             rvClassList.setAdapter(new ClassListAdapter(this));
             rvClassList.setLayoutManager(new LinearLayoutManager(this));
             DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
             rvClassList.addItemDecoration(dividerItemDecoration);
         }else {
-            catLoadingView.show(getSupportFragmentManager(), "");
+            progress.show();
         }
     }
 
@@ -84,7 +84,7 @@ public class ListClassActivity extends AppCompatActivity
     }
     @Subscribe(sticky = true ,threadMode = ThreadMode.MAIN)
     public void getDataSuccus(GetDataSuccusEvent event) {
-        catLoadingView.dismiss();
+        progress.dismiss();
         rvClassList.setAdapter(new ClassListAdapter(this));
         rvClassList.setLayoutManager(new LinearLayoutManager(this));
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
@@ -94,7 +94,7 @@ public class ListClassActivity extends AppCompatActivity
     }
 
     public void getDataFailed(GetDataFaildedEvent event) {
-        catLoadingView.dismiss();
+        progress.dismiss();
         Toast.makeText(this, "Load failed", Toast.LENGTH_SHORT).show();
         EventBus.getDefault().removeStickyEvent(GetDataFaildedEvent.class);
     }
