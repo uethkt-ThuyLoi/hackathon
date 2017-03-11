@@ -1,5 +1,6 @@
 package com.example.quanla.smartschool.activities;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.dd.CircularProgressButton;
 import com.example.quanla.smartschool.R;
 import com.example.quanla.smartschool.database.DbClassContext;
 import com.example.quanla.smartschool.database.model.ClassStudent;
@@ -37,8 +39,8 @@ public class LoginActivity extends AppCompatActivity {
     private EditText edt_username;
     private EditText edt_password;
 
-    private Button btn_login;
-    private Button btn_register;
+    private CircularProgressButton btn_login;
+    private CircularProgressButton btn_register;
 
     private TextInputLayout tilUsername;
     private TextInputLayout tilPassword;
@@ -59,8 +61,8 @@ public class LoginActivity extends AppCompatActivity {
         edt_username = (EditText) findViewById(R.id.edt_username);
         edt_password = (EditText) findViewById(R.id.edt_password);
 
-        btn_login = (Button) findViewById(R.id.btn_login);
-        btn_register =(Button) findViewById(R.id.btn_register);
+        btn_login = (CircularProgressButton) findViewById(R.id.bt_login);
+        btn_register =(CircularProgressButton) findViewById(R.id.bt_register);
 
         tilUsername = (TextInputLayout) findViewById(R.id.til_username);
         tilPassword = (TextInputLayout) findViewById(R.id.til_password);
@@ -74,6 +76,10 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void sendLogin(String username, String password){
+//        final ProgressDialog progress = ProgressDialog.show(this, "Loading",
+//                "Please waiting...", true);
+        btn_login.setIndeterminateProgressMode(true);
+        btn_login.setProgress(1);
         UserService service = NetContextLogin.instance.create(UserService.class);
 
         MediaType jsonType = MediaType.parse("application/json");
@@ -89,12 +95,20 @@ public class LoginActivity extends AppCompatActivity {
                     token = responseBody.get_id().get$oid();
                     Log.d(TAG, String.format("token: %s", token));
                     onLoginSuccess();
+                    btn_login.setProgress(100);
+                    //progress.dismiss();
+                } else {
+                    btn_login.setProgress(-1);
+                    btn_register.setEnabled(true);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(LoginActivity.this, "No internet", Toast.LENGTH_SHORT).show();
+                //progress.dismiss();
+                btn_login.setProgress(-1);
+                btn_register.setEnabled(true);
             }
         });
     }
@@ -111,6 +125,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void sendRegister(String username, String password){
+        btn_register.setIndeterminateProgressMode(true);
+        btn_register.setProgress(1);
         UserService service = NetContextLogin.instance.create(UserService.class);
 
         MediaType jsonType = MediaType.parse("application/json");
@@ -124,15 +140,20 @@ public class LoginActivity extends AppCompatActivity {
                 if(response.code()==200){
                     Toast.makeText(LoginActivity.this, "register success", Toast.LENGTH_SHORT).show();
                     Log.d(TAG, String.format("register %s", response.body()));
+                    btn_register.setProgress(100);
                 }
                 else{
                     Toast.makeText(LoginActivity.this, "Username existed", Toast.LENGTH_SHORT).show();
+                    btn_register.setProgress(-1);
+                    btn_login.setEnabled(true);
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 Toast.makeText(LoginActivity.this, "No Internet", Toast.LENGTH_SHORT).show();
+                btn_register.setProgress(-1);
+                btn_login.setEnabled(true);
             }
         });
     }
@@ -174,6 +195,8 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "click register");
+                btn_register.setProgress(0);
+                btn_login.setEnabled(false);
                 tryRegister();
             }
         });
@@ -181,6 +204,8 @@ public class LoginActivity extends AppCompatActivity {
         btn_login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                btn_login.setProgress(0);
+                btn_register.setEnabled(false);
                 attempLogin();
             }
         });

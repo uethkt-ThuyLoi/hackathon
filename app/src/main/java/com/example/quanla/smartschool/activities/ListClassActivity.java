@@ -1,44 +1,105 @@
 package com.example.quanla.smartschool.activities;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.quanla.smartschool.R;
+import com.example.quanla.smartschool.adapter.ClassListAdapter;
+import com.example.quanla.smartschool.database.DbClassContext;
+import com.example.quanla.smartschool.eventbus.GetDataFaildedEvent;
+import com.example.quanla.smartschool.eventbus.GetDataSuccusEvent;
+import com.roger.catloadinglibrary.CatLoadingView;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
+
+import static java.security.AccessController.getContext;
 
 public class ListClassActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @BindView(R.id.rv_class_list)
     RecyclerView rvClassList;
-    //ClassListAdapter classListAdapter ;
-    ProgressDialog progress;
+    ClassListAdapter classListAdapter = new ClassListAdapter(this);
+    CatLoadingView catLoadingView = new CatLoadingView();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_class);
+        EventBus.getDefault().register(this);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.setDrawerListener(toggle);
         toggle.syncState();
+        ButterKnife.bind(this);
+        setupUI();
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
+
+    public void setupUI()
+    {
+        catLoadingView.show(getSupportFragmentManager(), "");
+        if (DbClassContext.instance.getStudents()!=null){
+            catLoadingView.dismiss();
+            //classListAdapter = new ClassListAdapter(this);
+            DbClassContext.instance.getAllGroup();
+            rvClassList.setAdapter(new ClassListAdapter(this));
+            rvClassList.setLayoutManager(new LinearLayoutManager(this));
+            DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+            rvClassList.addItemDecoration(dividerItemDecoration);
+        }else {
+            catLoadingView.show(getSupportFragmentManager(), "");
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+    @Subscribe(sticky = true ,threadMode = ThreadMode.MAIN)
+    public void getDataSuccus(GetDataSuccusEvent event) {
+        catLoadingView.dismiss();
+        rvClassList.setAdapter(new ClassListAdapter(this));
+        rvClassList.setLayoutManager(new LinearLayoutManager(this));
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL);
+        rvClassList.addItemDecoration(dividerItemDecoration);
+        Toast.makeText(this, "Load completed", Toast.LENGTH_SHORT).show();
+        EventBus.getDefault().removeStickyEvent(GetDataSuccusEvent.class);
+    }
+
+    public void getDataFailed(GetDataFaildedEvent event) {
+        catLoadingView.dismiss();
+        Toast.makeText(this, "Load failed", Toast.LENGTH_SHORT).show();
+        EventBus.getDefault().removeStickyEvent(GetDataFaildedEvent.class);
+    }
+
+
 
     @Override
     public void onBackPressed() {
@@ -63,6 +124,7 @@ public class ListClassActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
